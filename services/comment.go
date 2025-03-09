@@ -37,14 +37,14 @@ func (s *CommentService) GetCommentsByPostID(ctx context.Context, postID string,
 	stmt, names := qbSelect.ToCql()
 
 	var comments []models.Comment
-	q := gocqlx.Query(db.ScyllaSession.Query(stmt).Consistency(gocql.One), names).
-		BindMap(qb.M{
-			"post_id": postID,
-		})
+	bindParams := qb.M{"post_id": postID}
 
 	if !lastCreatedAt.IsZero() {
-		q.Bind(lastCreatedAt)
+		bindParams["created_at"] = lastCreatedAt
 	}
+
+	q := gocqlx.Query(db.ScyllaSession.Query(stmt).Consistency(gocql.One), names).
+		BindMap(bindParams)
 
 	if err := q.SelectRelease(&comments); err != nil {
 		return nil, err
