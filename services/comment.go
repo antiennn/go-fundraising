@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/gocql/gocql"
 	"time"
 
 	"github.com/scylladb/gocqlx"
@@ -17,7 +18,7 @@ func (s *CommentService) InsertComment(ctx context.Context, comment models.Comme
 		Columns(models.CommentTable.Columns...).
 		ToCql()
 
-	return gocqlx.Query(db.ScyllaSession.Query(stmt), names).
+	return gocqlx.Query(db.ScyllaSession.Query(stmt).Consistency(gocql.One), names).
 		BindStruct(comment).
 		ExecRelease()
 }
@@ -36,7 +37,7 @@ func (s *CommentService) GetCommentsByPostID(ctx context.Context, postID string,
 	stmt, names := qbSelect.ToCql()
 
 	var comments []models.Comment
-	q := gocqlx.Query(db.ScyllaSession.Query(stmt), names).
+	q := gocqlx.Query(db.ScyllaSession.Query(stmt).Consistency(gocql.One), names).
 		BindMap(qb.M{
 			"post_id": postID,
 		})
