@@ -26,6 +26,7 @@ services:
       - SCYLLA_HOST=scylla
       - SCYLLA_PORT=9042
       - APP_PORT=8080
+      - SCYLLA_KEYSPACE=go_fundraising
     ports:
       - "8080:8080"
 
