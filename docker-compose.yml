@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  scylla:
+    image: scylladb/scylla:5.2
+    container_name: scylla
+    ports:
+      - "9042:9042"
+    volumes:
+      - scylla_data:/var/lib/scylla
+    environment:
+      - SCYLLA_ARGS=--broadcast-rpc-address=scylla
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh scylla -e 'DESC KEYSPACES'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  app:
+    build: .
+    container_name: go_app
+    depends_on:
+      scylla:
+        condition: service_healthy
+    environment:
+      - SCYLLA_HOST=scylla
+      - SCYLLA_PORT=9042
+      - APP_PORT=8080
+    ports:
+      - "8080:8080"
+
+volumes:
+  scylla_data:
